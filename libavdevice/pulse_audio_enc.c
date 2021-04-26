@@ -29,7 +29,7 @@
 #include "libavutil/frame.h"
 #include "libavutil/internal.h"
 #include "libavutil/opt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/log.h"
 #include "libavutil/attributes.h"
 #include "pulse_audio_common.h"

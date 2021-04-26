@@ -23,7 +23,7 @@
 #include "libavutil/dict.h"
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/avassert.h"
 #include "avio_internal.h"
 #include "os_support.h"

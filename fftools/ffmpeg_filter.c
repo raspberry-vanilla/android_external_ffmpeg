@@ -37,7 +37,7 @@
 #include "libavutil/pixdesc.h"
 #include "libavutil/pixfmt.h"
 #include "libavutil/samplefmt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/timestamp.h"
 
 typedef struct FilterGraphPriv {

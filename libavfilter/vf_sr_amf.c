@@ -28,7 +28,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 
 #include "libavutil/hwcontext.h"
 #include "libavutil/hwcontext_amf.h"

@@ -47,7 +47,7 @@
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 
 #define FF_INTERNAL_FIELDS 1
 #include "framequeue.h"

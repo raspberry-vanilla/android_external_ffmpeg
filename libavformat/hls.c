@@ -38,7 +38,7 @@
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
 #include "libavutil/dict.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "avformat.h"
 #include "demux.h"
 #include "internal.h"

@@ -41,7 +41,7 @@
 #include "libavutil/mathematics.h"
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/time_internal.h"
 
 #include "avformat.h"

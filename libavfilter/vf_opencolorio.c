@@ -23,7 +23,7 @@
 #include "libavutil/half2float.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "ocio_wrapper.hpp"
 #include "video.h"
 

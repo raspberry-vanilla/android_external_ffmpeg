@@ -38,7 +38,7 @@
 #include "libavutil/mem.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavcodec/avcodec.h"
 #include "libavcodec/codec_desc.h"
 #include "libavformat/demux.h"

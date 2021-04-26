@@ -30,7 +30,7 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/log.h"
 #include "libavutil/mem.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/timestamp.h"
 
 #include "libavcodec/packet.h"

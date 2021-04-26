@@ -27,7 +27,7 @@
 #include "libavutil/tree.h"
 #include "libavutil/dict.h"
 #include "libavutil/avassert.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/opt.h"
 #include "libavcodec/bytestream.h"
 #include "libavcodec/mpegaudiodata.h"
