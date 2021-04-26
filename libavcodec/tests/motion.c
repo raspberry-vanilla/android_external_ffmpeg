@@ -34,7 +34,7 @@
 #include "libavutil/internal.h"
 #include "libavutil/lfg.h"
 #include "libavutil/mem.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 
 #undef printf
 

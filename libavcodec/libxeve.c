@@ -31,7 +31,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/pixfmt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/cpu.h"
 #include "libavutil/avstring.h"
 

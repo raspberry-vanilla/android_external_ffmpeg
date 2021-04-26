@@ -32,7 +32,7 @@
 #include "internal.h"
 #include "video.h"
 #include "libswscale/swscale.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 
 typedef struct DnnProcessingContext {
     const AVClass *class;

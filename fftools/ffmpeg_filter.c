@@ -36,7 +36,7 @@
 #include "libavutil/pixfmt.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/samplefmt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/timestamp.h"
 
 // FIXME private header, used for mid_pred()
