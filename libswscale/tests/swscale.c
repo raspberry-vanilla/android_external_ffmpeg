@@ -33,7 +33,7 @@
 #include "libavutil/sfc64.h"
 #include "libavutil/frame.h"
 #include "libavutil/opt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/pixfmt.h"
 #include "libavutil/avassert.h"
 #include "libavutil/macros.h"

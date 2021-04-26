@@ -36,7 +36,7 @@
 #include "mathematics.h"
 #include "mem.h"
 #include "sfc64.h"
-#include "time.h"
+#include "avtime.h"
 #include "avstring.h"
 #include "reverse.h"
 

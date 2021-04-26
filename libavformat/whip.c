@@ -32,7 +32,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/mem.h"
 #include "libavutil/random_seed.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "avc.h"
 #include "nal.h"
 #include "avio_internal.h"

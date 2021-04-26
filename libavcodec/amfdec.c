@@ -23,7 +23,7 @@
 #include "hwconfig.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/mem.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "decode.h"
 #include "decode_bsf.h"
 #include "libavutil/mastering_display_metadata.h"

@@ -23,7 +23,7 @@
 #include "libavutil/mem.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/opt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 
 #include "network.h"
 #include "os_support.h"

@@ -32,7 +32,7 @@
 #include "libavutil/mem.h"
 #include "libavutil/log.h"
 #include "libavutil/dict.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/imgutils.h"
 
 #include "avcodec.h"

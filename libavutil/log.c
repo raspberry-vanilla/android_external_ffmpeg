@@ -42,7 +42,7 @@
 #include "internal.h"
 #include "log.h"
 #include "thread.h"
-#include "time.h"
+#include "avtime.h"
 #include "time_internal.h"
 
 static AVMutex mutex = AV_MUTEX_INITIALIZER;
