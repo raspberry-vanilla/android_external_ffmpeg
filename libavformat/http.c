@@ -34,7 +34,7 @@
 #include "libavutil/macros.h"
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/parseutils.h"
 
 #include "avformat.h"

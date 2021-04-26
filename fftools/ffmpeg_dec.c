@@ -28,7 +28,7 @@
 #include "libavutil/pixdesc.h"
 #include "libavutil/pixfmt.h"
 #include "libavutil/stereo3d.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/timestamp.h"
 
 #include "libavcodec/avcodec.h"

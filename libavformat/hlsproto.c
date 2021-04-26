@@ -27,7 +27,7 @@
 
 #include "libavutil/avstring.h"
 #include "libavutil/mem.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "avio_internal.h"
 #include "internal.h"
 #include "url.h"

@@ -71,7 +71,7 @@
 #include "libavutil/bprint.h"
 #include "libavutil/dict.h"
 #include "libavutil/mem.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 
 #include "libavformat/avformat.h"
 

@@ -35,7 +35,7 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "libavutil/log.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "network.h"
 #include "os_support.h"
 #include "url.h"
