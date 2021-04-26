@@ -28,7 +28,7 @@
 #include "libavutil/mem.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/stereo3d.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/video_hint.h"
 #include "avcodec.h"
 #include "codec_internal.h"

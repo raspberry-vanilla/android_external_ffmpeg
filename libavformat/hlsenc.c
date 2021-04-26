@@ -40,7 +40,7 @@
 #include "libavutil/parseutils.h"
 #include "libavutil/log.h"
 #include "libavutil/random_seed.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/time_internal.h"
 
 #include "libavcodec/defs.h"

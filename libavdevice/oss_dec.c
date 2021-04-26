@@ -32,7 +32,7 @@
 
 #include "libavutil/internal.h"
 #include "libavutil/opt.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 
 #include "avdevice.h"
 #include "libavformat/demux.h"

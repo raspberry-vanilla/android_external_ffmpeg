@@ -22,7 +22,7 @@
 #include "amfdec.h"
 #include "codec_internal.h"
 #include "hwconfig.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "decode.h"
 #include "decode_bsf.h"
 

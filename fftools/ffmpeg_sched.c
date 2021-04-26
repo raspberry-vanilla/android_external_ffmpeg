@@ -38,7 +38,7 @@
 #include "libavutil/mem.h"
 #include "libavutil/thread.h"
 #include "libavutil/threadmessage.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 
 // 100 ms
 // FIXME: some other value? make this dynamic?

@@ -24,7 +24,7 @@
 
 #include "network.h"
 #include "os_support.h"
-#include "libavutil/time.h"
+#include "libavutil/avtime.h"
 #include "libavutil/random_seed.h"
 #include "url.h"
 #include "tls.h"
