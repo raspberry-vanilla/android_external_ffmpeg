@@ -624,6 +624,7 @@ TESTPROGS-$(CONFIG_DNN) += dnn-layer-avgpool dnn-layer-conv2d dnn-layer-dense  \
 
 TOOLS-$(CONFIG_LIBZMQ) += zmqsend
 
+ifndef CONFIG_ANDROID
 clean::
 	$(RM) $(CLEANSUFFIXES:%=libavfilter/dnn/%) $(CLEANSUFFIXES:%=libavfilter/opencl/%)
 
@@ -632,3 +633,4 @@ OPENCL = $(subst $(SRC_PATH)/,,$(wildcard $(SRC_PATH)/libavfilter/opencl/*.cl))
 libavfilter/opencl/%.c: TAG = OPENCL
 libavfilter/opencl/%.c: $(SRC_PATH)/libavfilter/opencl/%.cl
 	$(M)$(SRC_PATH)/tools/cl2c $< $@
+endif
