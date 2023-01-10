@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # Generate configurations for various FFMPEG targets
-TARGETS="armv5te armv7-a armv7-a-neon armv8-a silvermont x86 x86_64"
+#TARGETS="armv5te armv7-a armv7-a-neon armv8-a silvermont x86 x86_64"
+TARGETS="armv8-a"
 # SYSROOT_BASE="../../prebuilts/ndk/current/platforms/android-21"
 # TOOLS_BASE="../../prebuilts/gcc/linux-x86"
 [ -d "$ANDROID_NDK_HOME" ] || { echo "ANDROID_NDK_HOME is not properly set"; exit 1; }
@@ -70,6 +71,6 @@ URLProtocol ff_android_protocol;\
 cat > android/include/libavutil/ffversion.h <<EOF
 #ifndef FFVERSION_H
 #define FFVERSION_H
-#define FFMPEG_VERSION "`cat RELEASE` (Android-x86)"
+#define FFMPEG_VERSION "`cat RELEASE` (KonstaKANG)"
 #endif /* FFVERSION_H */
 EOF
