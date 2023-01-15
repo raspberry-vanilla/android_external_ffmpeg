@@ -32,7 +32,7 @@
 #endif
 
 #include <drm.h>
-#include <libdrm/drm_fourcc.h>
+#include <drm_fourcc.h>
 #include <xf86drm.h>
 
 #include "avassert.h"

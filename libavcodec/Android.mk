@@ -23,6 +23,10 @@ ifeq ($(CONFIG_VAAPI),yes)
   LOCAL_SHARED_LIBRARIES += libva
 endif
 
+ifeq ($(CONFIG_LIBDRM),yes)
+  LOCAL_SHARED_LIBRARIES += libdrm
+endif
+
 ifneq ($(ARCH_ARM_HAVE_NEON),)
   LOCAL_SRC_FILES += neon/mpegvideo.c
 endif
@@ -41,6 +45,10 @@ LOCAL_SHARED_LIBRARIES +=	\
 
 ifeq ($(CONFIG_VAAPI),yes)
   LOCAL_SHARED_LIBRARIES += libva
+endif
+
+ifeq ($(CONFIG_LIBDRM),yes)
+  LOCAL_SHARED_LIBRARIES += libdrm
 endif
 
 ifneq ($(ARCH_ARM_HAVE_NEON),)
