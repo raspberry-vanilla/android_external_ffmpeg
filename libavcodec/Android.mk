@@ -19,6 +19,8 @@ LOCAL_C_INCLUDES +=		\
 LOCAL_SHARED_LIBRARIES +=	\
 	libz \
 
+LOCAL_CFLAGS += -Wno-enum-conversion
+
 ifeq ($(CONFIG_VAAPI),yes)
   LOCAL_SHARED_LIBRARIES += libva
 endif
@@ -46,6 +48,8 @@ LOCAL_C_INCLUDES +=		\
 
 LOCAL_SHARED_LIBRARIES +=	\
 	libz \
+
+LOCAL_CFLAGS += -Wno-enum-conversion
 
 ifeq ($(CONFIG_VAAPI),yes)
   LOCAL_SHARED_LIBRARIES += libva
