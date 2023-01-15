@@ -14,12 +14,20 @@ LOCAL_PATH := $(call my-dir)
 FFMPEG_MULTILIB := 32
 include $(LOCAL_PATH)/../android/build.mk
 
+ifeq ($(CONFIG_LIBDRM),yes)
+LOCAL_SHARED_LIBRARIES += libdrm
+endif
+
 LOCAL_MULTILIB := $(FFMPEG_MULTILIB)
 include $(BUILD_SHARED_LIBRARY)
 
 
 FFMPEG_MULTILIB := 64
 include $(LOCAL_PATH)/../android/build.mk
+
+ifeq ($(CONFIG_LIBDRM),yes)
+LOCAL_SHARED_LIBRARIES += libdrm
+endif
 
 LOCAL_MULTILIB := $(FFMPEG_MULTILIB)
 include $(BUILD_SHARED_LIBRARY)
