@@ -98,8 +98,8 @@ static int hevc_parse_slice_header(AVCodecParserContext *s, H2645NAL *nal,
     avctx->level    = ps->sps->ptl.general_ptl.level_idc;
 
     if (ps->sps->chroma_format_idc == 1) {
-        avctx->chroma_sample_location = ps->sps->vui.chroma_loc_info_present_flag ?
-            ps->sps->vui.chroma_sample_loc_type_top_field + 1 :
+        avctx->chroma_sample_location = ps->sps->vui.common.chroma_loc_info_present_flag ?
+            ps->sps->vui.common.chroma_sample_loc_type_top_field + 1 :
             AVCHROMA_LOC_LEFT;
     }
     else if (ps->sps->chroma_format_idc == 2 ||

@@ -348,8 +348,8 @@ static void export_stream_params(HEVCContext *s, const HEVCSPS *sps)
         avctx->color_range = AVCOL_RANGE_MPEG;
 
     if (sps->chroma_format_idc == 1) {
-        avctx->chroma_sample_location = sps->vui.chroma_loc_info_present_flag ?
-            sps->vui.chroma_sample_loc_type_top_field + 1 :
+        avctx->chroma_sample_location = sps->vui.common.chroma_loc_info_present_flag ?
+            sps->vui.common.chroma_sample_loc_type_top_field + 1 :
             AVCHROMA_LOC_LEFT;
     }
     else if (sps->chroma_format_idc == 2 ||
