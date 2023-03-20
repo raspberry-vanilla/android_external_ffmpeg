@@ -33,6 +33,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/hwcontext_drm.h"
 #include "libavformat/internal.h"
+#include "libavformat/mux.h"
 #include "avdevice.h"
 
 #include "pthread.h"
@@ -762,19 +763,19 @@ static const AVClass egl_vout_class = {
     .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT,
 };
 
-AVOutputFormat ff_vout_egl_muxer = {
-    .name           = "vout_egl",
-    .long_name      = NULL_IF_CONFIG_SMALL("Egl video output device"),
+FFOutputFormat ff_vout_egl_muxer = {
+    .p.name         = "vout_egl",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Egl video output device"),
     .priv_data_size = sizeof(egl_display_env_t),
-    .audio_codec    = AV_CODEC_ID_NONE,
-    .video_codec    = AV_CODEC_ID_WRAPPED_AVFRAME,
+    .p.audio_codec  = AV_CODEC_ID_NONE,
+    .p.video_codec  = AV_CODEC_ID_WRAPPED_AVFRAME,
     .write_header   = egl_vout_write_header,
     .write_packet   = egl_vout_write_packet,
     .write_uncoded_frame = egl_vout_write_frame,
     .write_trailer  = egl_vout_write_trailer,
     .control_message = egl_vout_control_message,
-    .flags          = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
-    .priv_class     = &egl_vout_class,
+    .p.flags        = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
+    .p.priv_class   = &egl_vout_class,
     .init           = egl_vout_init,
     .deinit         = egl_vout_deinit,
 };

@@ -26,6 +26,7 @@
 #include "libavutil/pixdesc.h"
 #include "libavutil/hwcontext_drm.h"
 #include "libavformat/internal.h"
+#include "libavformat/mux.h"
 #include "avdevice.h"
 
 #include "pthread.h"
@@ -654,19 +655,19 @@ static const AVClass drm_vout_class = {
     .category   = AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT,
 };
 
-AVOutputFormat ff_vout_drm_muxer = {
-    .name           = "vout_drm",
-    .long_name      = NULL_IF_CONFIG_SMALL("Drm video output device"),
+FFOutputFormat ff_vout_drm_muxer = {
+    .p.name         = "vout_drm",
+    .p.long_name    = NULL_IF_CONFIG_SMALL("Drm video output device"),
     .priv_data_size = sizeof(drm_display_env_t),
-    .audio_codec    = AV_CODEC_ID_NONE,
-    .video_codec    = AV_CODEC_ID_WRAPPED_AVFRAME,
+    .p.audio_codec  = AV_CODEC_ID_NONE,
+    .p.video_codec  = AV_CODEC_ID_WRAPPED_AVFRAME,
     .write_header   = drm_vout_write_header,
     .write_packet   = drm_vout_write_packet,
     .write_uncoded_frame = drm_vout_write_frame,
     .write_trailer  = drm_vout_write_trailer,
     .control_message = drm_vout_control_message,
-    .flags          = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
-    .priv_class     = &drm_vout_class,
+    .p.flags        = AVFMT_NOFILE | AVFMT_VARIABLE_FPS | AVFMT_NOTIMESTAMPS,
+    .p.priv_class   = &drm_vout_class,
     .init           = drm_vout_init,
     .deinit         = drm_vout_deinit,
 };
