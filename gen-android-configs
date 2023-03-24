@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# Generate configurations for various FFMPEG targets
+TARGETS="armv7-a-neon armv8-a"
+[ -d "$ANDROID_NDK_HOME" ] || { echo "ANDROID_NDK_HOME is not properly set"; exit 1; }
+TOOLS_BASE="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+
+BASE_CONFIG="--disable-static --enable-shared --enable-optimizations --disable-doc --disable-symver --disable-ffmpeg --disable-ffplay --disable-ffprobe --disable-avdevice --disable-devices --disable-filters --disable-demuxer=srt --disable-demuxer=microdvd --disable-demuxer=jacosub --disable-demuxer=sami --disable-demuxer=realtext --disable-demuxer=dts --disable-demuxer=subviewer --disable-demuxer=subviewer1 --disable-demuxer=pjs --disable-demuxer=vplayer --disable-demuxer=mpl2 --disable-decoder=ass --disable-decoder=srt --disable-decoder=subrip --disable-decoder=microdvd --disable-decoder=jacosub --disable-decoder=sami --disable-decoder=realtext --disable-decoder=movtext --disable-decoder=subviewer --disable-decoder=subviewer1 --disable-decoder=pjs --disable-decoder=vplayer --disable-decoder=mpl2 --disable-v4l2_m2m --disable-txtpages --disable-htmlpages --disable-vulkan --disable-cuda-llvm --enable-zlib --enable-pic --disable-debug --nm=${TOOLS_BASE}/llvm-nm --strip=${TOOLS_BASE}/llvm-strip --ar=${TOOLS_BASE}/llvm-ar --ranlib=${TOOLS_BASE}/llvm-ranlib --x86asmexe=${TOOLS_BASE}/yasm"
+function makeinfo() { false; }
+export -f makeinfo
+
+OPTS_armv7_a_neon="--arch=arm --cpu=armv7-a --build_suffix= --enable-cross-compile --cross-prefix=${TOOLS_BASE}/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi- --target-os=android --cc=${TOOLS_BASE}/armv7a-linux-androideabi31-clang --cxx=${TOOLS_BASE}/armv7a-linux-androideabi31-clang++"
+
+OPTS_armv8_a="--arch=aarch64 --enable-cross-compile --cross-prefix=${TOOLS_BASE}/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android- --target-os=android --cc=${TOOLS_BASE}/aarch64-linux-android31-clang --cxx=${TOOLS_BASE}/aarch64-linux-android31-clang++"
+
+for TARGET in $TARGETS;do
+    echo "Generating configuration for: ${TARGET}"
+    ARCH_OPTS=OPTS_`echo $TARGET | tr "-" "_"`
+    echo "configure ${!ARCH_OPTS} $BASE_CONFIG"
+    ./configure ${!ARCH_OPTS} $BASE_CONFIG
+    mkdir -p android
+    mv ffbuild/config.mak android/config-${TARGET}.mak
+    cat config.h | sed -e "s/^#define \(ARCH_.*\|HAVE_.*\) \(.*\)/#ifdef \1\n#undef \1\n#endif\n#define \1 \2/g" > android/include/config-${TARGET}.h
+    rm -f config.h
+done
+
+GENERATED_FILES=" \
+    config_components.h \
+    libavutil/avconfig.h \
+    libavcodec/codec_list.c \
+    libavcodec/parser_list.c \
+    libavcodec/bsf_list.c \
+    libavformat/demuxer_list.c \
+    libavformat/muxer_list.c \
+    libavformat/protocol_list.c \
+"
+for gen in $GENERATED_FILES; do
+    mkdir -p android/include/`dirname $gen`
+    mv $gen android/include/$gen
+done
+sed -i -e '1 i\
+#ifdef ANDROID\
+URLProtocol ff_android_protocol;\
+#endif\
+' -e '1 a\
+#ifdef ANDROID\
+    &ff_android_protocol,\
+#endif' android/include/libavformat/protocol_list.c
+
+cat > android/include/libavutil/ffversion.h <<EOF
+#ifndef FFVERSION_H
+#define FFVERSION_H
+#define FFMPEG_VERSION "`cat RELEASE` (KonstaKANG)"
+#endif /* FFVERSION_H */
+EOF
