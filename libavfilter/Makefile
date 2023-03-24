@@ -666,6 +666,7 @@ TESTPROGS = drawutils filtfmts formats integral
 
 TOOLS-$(CONFIG_LIBZMQ) += zmqsend
 
+ifndef CONFIG_ANDROID
 clean::
 	$(RM) $(CLEANSUFFIXES:%=libavfilter/dnn/%) $(CLEANSUFFIXES:%=libavfilter/opencl/%) \
               $(CLEANSUFFIXES:%=libavfilter/metal/%) \
@@ -682,3 +683,4 @@ VULKAN = $(subst $(SRC_PATH)/,,$(wildcard $(SRC_PATH)/libavfilter/vulkan/*.comp)
 libavfilter/vulkan/%.c: TAG = OPENCL
 libavfilter/vulkan/%.c: $(SRC_PATH)/libavfilter/vulkan/%.comp
 	$(M)$(SRC_PATH)/tools/source2c $< $@
+endif

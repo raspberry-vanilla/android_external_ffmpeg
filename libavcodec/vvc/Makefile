@@ -1,5 +1,7 @@
+ifndef CONFIG_ANDROID
 clean::
 	$(RM) $(CLEANSUFFIXES:%=libavcodec/vvc/%)
+endif
 
 OBJS-$(CONFIG_VVC_DECODER)          +=  vvc/vvcdec.o            \
                                         vvc/vvcdsp.o            \

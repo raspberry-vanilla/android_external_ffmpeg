@@ -1,5 +1,7 @@
+ifndef CONFIG_ANDROID
 clean::
 	$(RM) $(CLEANSUFFIXES:%=libavcodec/bsf/%)
+endif
 
 OBJS-$(CONFIG_AAC_ADTSTOASC_BSF)          += bsf/aac_adtstoasc.o
 OBJS-$(CONFIG_AV1_FRAME_MERGE_BSF)        += bsf/av1_frame_merge.o

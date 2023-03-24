@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# Generate configurations for various FFMPEG targets
+TARGETS="armv8-a"
+[ -d "$ANDROID_NDK_HOME" ] || { echo "ANDROID_NDK_HOME is not properly set"; exit 1; }
+TOOLS_BASE="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+
+BASE_CONFIG="--disable-static --enable-shared --enable-optimizations --disable-doc --disable-symver --disable-ffmpeg --disable-ffplay --disable-ffprobe --disable-avdevice --disable-devices --disable-filters --disable-demuxer=srt --disable-demuxer=microdvd --disable-demuxer=jacosub --disable-demuxer=sami --disable-demuxer=realtext --disable-demuxer=dts --disable-demuxer=subviewer --disable-demuxer=subviewer1 --disable-demuxer=pjs --disable-demuxer=vplayer --disable-demuxer=mpl2 --disable-decoder=ass --disable-decoder=srt --disable-decoder=subrip --disable-decoder=microdvd --disable-decoder=jacosub --disable-decoder=sami --disable-decoder=realtext --disable-decoder=movtext --disable-decoder=subviewer --disable-decoder=subviewer1 --disable-decoder=pjs --disable-decoder=vplayer --disable-decoder=mpl2 --disable-v4l2_m2m --disable-txtpages --disable-htmlpages --disable-vulkan --disable-cuda-llvm --enable-zlib --enable-pic --disable-debug --nm=${TOOLS_BASE}/llvm-nm --strip=${TOOLS_BASE}/llvm-strip --ar=${TOOLS_BASE}/llvm-ar --ranlib=${TOOLS_BASE}/llvm-ranlib --x86asmexe=${TOOLS_BASE}/yasm"
+function makeinfo() { false; }
+export -f makeinfo
+
+OPTS_armv8_a="--arch=aarch64 --enable-cross-compile --cross-prefix=${TOOLS_BASE}/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android- --target-os=android --cc=${TOOLS_BASE}/aarch64-linux-android34-clang --cxx=${TOOLS_BASE}/aarch64-linux-android31-clang++"
+
+for TARGET in $TARGETS; do
+    echo "Generating configuration for: ${TARGET}"
+    ARCH_OPTS=OPTS_`echo $TARGET | tr "-" "_"`
+    echo "configure ${!ARCH_OPTS} $BASE_CONFIG"
+    ./configure ${!ARCH_OPTS} $BASE_CONFIG
+    mkdir -p android/include
+    mv ffbuild/config.mak android/config.mak
+    mv config.h android/include/config.h
+done
+
+GENERATED_FILES=" \
+    config_components.h \
+    libavutil/avconfig.h \
+    libavcodec/codec_list.c \
+    libavcodec/parser_list.c \
+    libavcodec/bsf_list.c \
+    libavformat/demuxer_list.c \
+    libavformat/muxer_list.c \
+    libavformat/protocol_list.c \
+"
+for GEN in $GENERATED_FILES; do
+    mkdir -p android/include/`dirname $GEN`
+    mv $GEN android/include/$GEN
+done
+
+cat > android/include/libavutil/ffversion.h <<EOF
+#ifndef FFVERSION_H
+#define FFVERSION_H
+#define FFMPEG_VERSION "`cat RELEASE` (KonstaKANG)"
+#endif /* FFVERSION_H */
+EOF
