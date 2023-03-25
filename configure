@@ -7352,6 +7352,7 @@ fi
 # Raspberry Pi - Android
 case $target_os in
     android)
+        enable libdav1d
         enable libdrm libdrm_getfb2 linux_dma_buf_h
         enable libudev
         enable sand
