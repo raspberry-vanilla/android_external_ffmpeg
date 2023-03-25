@@ -661,6 +661,7 @@ static const FFCodec * const codec_list[] = {
     &ff_text_decoder,
     &ff_webvtt_decoder,
     &ff_xsub_decoder,
+    &ff_libdav1d_decoder,
     &ff_bintext_decoder,
     &ff_xbin_decoder,
     &ff_idf_decoder,
