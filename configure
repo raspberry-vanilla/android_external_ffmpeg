@@ -7064,6 +7064,7 @@ case $target_os in
         enable sand
         enable v4l2_request linux_videodev2_h linux_media_h v4l2_timeval_to_ns
         enable vout_drm vout_drm_outdev
+        disable v4l2_req_hevc_vx
         ;;
 esac
 
