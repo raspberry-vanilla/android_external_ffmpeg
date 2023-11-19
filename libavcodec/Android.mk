@@ -27,7 +27,6 @@ LOCAL_SHARED_LIBRARIES += libudev
 endif
 
 ifeq ($(CONFIG_LIBDAV1D),yes)
-LOCAL_C_INCLUDES += external/dav1d/include
 LOCAL_SHARED_LIBRARIES += libdav1d
 endif
 
@@ -57,7 +56,6 @@ LOCAL_SHARED_LIBRARIES += libudev
 endif
 
 ifeq ($(CONFIG_LIBDAV1D),yes)
-LOCAL_C_INCLUDES += external/dav1d/include
 LOCAL_SHARED_LIBRARIES += libdav1d
 endif
 

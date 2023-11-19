@@ -35,8 +35,6 @@
 #include "decode.h"
 #include "internal.h"
 
-#define DAV1D_API_VERSION_MAJOR 6
-#define DAV1D_API_VERSION_MINOR 8
 #define FF_DAV1D_VERSION_AT_LEAST(x,y) \
     (DAV1D_API_VERSION_MAJOR > (x) || DAV1D_API_VERSION_MAJOR == (x) && DAV1D_API_VERSION_MINOR >= (y))
 
