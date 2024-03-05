@@ -7055,10 +7055,9 @@ if enabled vulkan; then
         check_cpp_condition vulkan "vulkan/vulkan.h" "defined(VK_VERSION_1_3) || (defined(VK_VERSION_1_2) && VK_HEADER_VERSION >= 189)"
 fi
 
-# Raspberry Pi 4 - Android
+# Raspberry Pi - Android
 case $target_os in
     android)
-        enable libdav1d
         enable libdrm libdrm_getfb2 linux_dma_buf_h
         enable libudev
         enable sand
