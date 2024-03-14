@@ -38,6 +38,10 @@ ifeq ($(FFMPEG_2ND_ARCH), true)
 FFMPEG_ARCH_VARIANT := $(TARGET_2ND_ARCH_VARIANT)
 endif
 
+ifeq ($(FFMPEG_ARCH),arm)
+FFMPEG_ARCH_VARIANT := armv7-a-neon
+endif
+
 TARGET_CONFIG := config-$(FFMPEG_ARCH_VARIANT).h
 
 include $(FFDROID_DIR)/config-$(FFMPEG_ARCH_VARIANT).mak
