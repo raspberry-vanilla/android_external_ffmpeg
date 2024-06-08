@@ -18,6 +18,14 @@ ifeq ($(CONFIG_ZLIB),yes)
 LOCAL_SHARED_LIBRARIES += libz
 endif
 
+ifeq ($(CONFIG_LIBDRM),yes)
+LOCAL_SHARED_LIBRARIES += libdrm
+endif
+
+ifeq ($(CONFIG_LIBUDEV),yes)
+LOCAL_SHARED_LIBRARIES += libudev
+endif
+
 ifneq ($(ARCH_ARM_HAVE_NEON),)
 LOCAL_SRC_FILES += neon/mpegvideo.c
 endif

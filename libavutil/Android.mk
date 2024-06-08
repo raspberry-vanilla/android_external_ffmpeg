@@ -13,4 +13,8 @@ LOCAL_PATH := $(call my-dir)
 
 include $(LOCAL_PATH)/../android/build.mk
 
+ifeq ($(CONFIG_LIBDRM),yes)
+LOCAL_SHARED_LIBRARIES += libdrm
+endif
+
 include $(BUILD_SHARED_LIBRARY)
