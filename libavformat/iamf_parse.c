@@ -67,7 +67,7 @@ static int aac_decoder_config(IAMFCodecConfig *codec_config,
     if (codec_config->audio_roll_distance >= 0)
         return AVERROR_INVALIDDATA;
 
-    tag = avio_r8(pb);
+    ff_mp4_read_descr(logctx, pb, &tag);
     if (tag != MP4DecConfigDescrTag)
         return AVERROR_INVALIDDATA;
 
@@ -87,12 +87,9 @@ static int aac_decoder_config(IAMFCodecConfig *codec_config,
     if (codec_id && codec_id != codec_config->codec_id)
         return AVERROR_INVALIDDATA;
 
-    tag = avio_r8(pb);
-    if (tag != MP4DecSpecificDescrTag)
-        return AVERROR_INVALIDDATA;
-
-    left = len - avio_tell(pb);
-    if (left <= 0)
+    left = ff_mp4_read_descr(logctx, pb, &tag);
+    if (tag != MP4DecSpecificDescrTag ||
+        !left || left > (len - avio_tell(pb)))
         return AVERROR_INVALIDDATA;
 
     // We pad extradata here because avpriv_mpeg4audio_get_config2() needs it.
@@ -100,9 +97,10 @@ static int aac_decoder_config(IAMFCodecConfig *codec_config,
     if (!codec_config->extradata)
         return AVERROR(ENOMEM);
 
-    codec_config->extradata_size = avio_read(pb, codec_config->extradata, left);
-    if (codec_config->extradata_size < left)
-        return AVERROR_INVALIDDATA;
+    ret = ffio_read_size(pb, codec_config->extradata, left);
+    if (ret < 0)
+        return ret;
+    codec_config->extradata_size = left;
     memset(codec_config->extradata + codec_config->extradata_size, 0,
            AV_INPUT_BUFFER_PADDING_SIZE);
 
@@ -308,10 +306,10 @@ static int update_extradata(AVCodecParameters *codecpar)
         skip_bits(&gb, 4);
         put_bits(&pb, 4, codecpar->ch_layout.nb_channels); // set channel config
         ret = put_bits_left(&pb);
-        put_bits(&pb, ret, get_bits(&gb, ret));
+        put_bits(&pb, ret, get_bits_long(&gb, ret));
         flush_put_bits(&pb);
 
-        memcpy(codecpar->extradata, buf, sizeof(buf));
+        memcpy(codecpar->extradata, buf, put_bytes_output(&pb));
         break;
     }
     case AV_CODEC_ID_FLAC: {
@@ -636,6 +634,12 @@ static int audio_element_obu(void *s, IAMFContext *c, AVIOContext *pb, int len)
         }
 
     audio_element_type = avio_r8(pbc) >> 5;
+    if (audio_element_type > AV_IAMF_AUDIO_ELEMENT_TYPE_SCENE) {
+        av_log(s, AV_LOG_DEBUG, "Unknown audio_element_type referenced in an audio element. Ignoring\n");
+        ret = 0;
+        goto fail;
+    }
+
     codec_config_id = ffio_read_leb(pbc);
 
     codec_config = ff_iamf_get_codec_config(c, codec_config_id);
@@ -751,8 +755,7 @@ static int audio_element_obu(void *s, IAMFContext *c, AVIOContext *pb, int len)
         if (ret < 0)
             goto fail;
     } else {
-        unsigned audio_element_config_size = ffio_read_leb(pbc);
-        avio_skip(pbc, audio_element_config_size);
+        av_assert0(0);
     }
 
     c->audio_elements[c->nb_audio_elements++] = audio_element;
@@ -1075,6 +1078,7 @@ int ff_iamfdec_read_descriptors(IAMFContext *c, AVIOContext *pb,
         size = avio_read(pb, header, FFMIN(MAX_IAMF_OBU_HEADER_SIZE, max_size));
         if (size < 0)
             return size;
+        memset(header + size, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
         len = ff_iamf_parse_obu_header(header, size, &obu_size, &start_pos, &type, NULL, NULL);
         if (len < 0 || obu_size > max_size) {

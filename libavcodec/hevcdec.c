@@ -384,7 +384,7 @@ static void export_stream_params(HEVCContext *s, const HEVCSPS *sps)
         den = sps->vui.vui_time_scale;
     }
 
-    if (num != 0 && den != 0)
+    if (num > 0 && den > 0)
         av_reduce(&avctx->framerate.den, &avctx->framerate.num,
                   num, den, 1 << 30);
 }
@@ -2665,6 +2665,11 @@ static int hls_decode_entry_wpp(AVCodecContext *avctxt, void *hevc_lclist,
         if (ret < 0)
             goto error;
         hls_sao_param(lc, x_ctb >> s->ps.sps->log2_ctb_size, y_ctb >> s->ps.sps->log2_ctb_size);
+
+        s->deblock[ctb_addr_rs].beta_offset = s->sh.beta_offset;
+        s->deblock[ctb_addr_rs].tc_offset   = s->sh.tc_offset;
+        s->filter_slice_edges[ctb_addr_rs]  = s->sh.slice_loop_filter_across_slices_enabled_flag;
+
         more_data = hls_coding_quadtree(lc, x_ctb, y_ctb, s->ps.sps->log2_ctb_size, 0);
 
         if (more_data < 0) {
