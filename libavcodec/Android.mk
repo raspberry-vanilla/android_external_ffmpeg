@@ -30,7 +30,7 @@ ifeq ($(CONFIG_LIBDAV1D),yes)
 LOCAL_SHARED_LIBRARIES += libdav1d
 endif
 
-ifneq ($(ARCH_ARM_HAVE_NEON),)
+ifeq ($(HAVE_INTRINSICS_NEON),yes)
 LOCAL_SRC_FILES += neon/mpegvideo.c
 endif
 
