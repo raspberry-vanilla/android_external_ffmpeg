@@ -939,17 +939,6 @@ static int v4l2_request_hevc_decode_slice(AVCodecContext *avctx, V4L2RequestCont
         }
     }
 
-    if (ctx->decode_mode == V4L2_STATELESS_HEVC_DECODE_MODE_FRAME_BASED) {
-        if (rd->slices == NULL) {
-            if ((rd->slices = av_mallocz(sizeof(*rd->slices))) == NULL)
-                return AVERROR(ENOMEM);
-            rd->slices->ptr = buffer;
-            rd->num_slices = 1;
-        }
-        rd->slices->len = buffer - rd->slices->ptr + size;
-        return 0;
-    }
-
     if ((rv = slice_add(rd)) != 0)
         return rv;
 
@@ -1197,11 +1186,7 @@ probe(AVCodecContext * const avctx, V4L2RequestContextHEVC * const ctx)
 
     mediabufs_ctl_query_ext_ctrls(ctx->mbufs, qc, noof_ctrls);
     i = 0;
-#if HEVC_CTRLS_VERSION >= 4
-    // Skip slice check if no slice mode
-    if (qc[1].type != 0 && !ctrl_valid(qc + 1, V4L2_STATELESS_HEVC_DECODE_MODE_SLICE_BASED))
-        i = 1;
-#else
+#if HEVC_CTRLS_VERSION < 4
     // Fail frame mode silently for anything prior to V4
     if (qc[1].type == 0 || !ctrl_valid(qc + 1, V4L2_STATELESS_HEVC_DECODE_MODE_SLICE_BASED))
         return AVERROR(EINVAL);
