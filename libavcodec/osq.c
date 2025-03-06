@@ -159,6 +159,8 @@ static int update_residue_parameter(OSQChannel *cb)
     int rice_k;
 
     sum = cb->sum;
+    if (!sum)
+        return 0;
     x = sum / cb->count;
     rice_k = ceil(log2(x));
     if (rice_k >= 30) {
@@ -297,7 +299,7 @@ static int do_decode(AVCodecContext *avctx, AVFrame *frame, int decorrelate, int
                 dst[n] += (int)(P2 + P3) / 2 + (unsigned)p;
                 break;
             case 8:
-                dst[n] += (int)(P2 + P3) / 2;
+                dst[n] += (int)(P2 + P3) / 2 + 0U;
                 break;
             case 9:
                 dst[n] += (int)(P2 * 2 + P3) / 3 + (unsigned)p;
@@ -306,13 +308,13 @@ static int do_decode(AVCodecContext *avctx, AVFrame *frame, int decorrelate, int
                 dst[n] += (int)(P2 + P3 * 2) / 3 + (unsigned)p;
                 break;
             case 11:
-                dst[n] += (int)((unsigned)dst[A] + dst[B]) / 2;
+                dst[n] += (int)((unsigned)dst[A] + dst[B]) / 2 + 0U;
                 break;
             case 12:
                 dst[n] += (unsigned)dst[B];
                 break;
             case 13:
-                dst[n] += (int)(unsigned)(dst[D] + dst[B]) / 2;
+                dst[n] += (int)((unsigned)dst[D] + dst[B]) / 2 + 0U;
                 break;
             case 14:
                 dst[n] += (int)((unsigned)P2 + dst[A]) / 2 + (unsigned)p;
@@ -339,7 +341,7 @@ static int do_decode(AVCodecContext *avctx, AVFrame *frame, int decorrelate, int
 
             if (nb_channels == 2 && ch == 1) {
                 if (decorrelate)
-                    dst[n] += s->decode_buffer[0][OFFSET+n];
+                    dst[n] += (unsigned)s->decode_buffer[0][OFFSET+n];
             }
 
             if (downsample)
