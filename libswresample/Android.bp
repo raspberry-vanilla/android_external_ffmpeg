@@ -1,0 +1,30 @@
+//
+// Copyright (C) 2025 KonstaKANG
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+//
+
+cc_library_shared {
+    name: "libswresample",
+    defaults: ["ffmpeg_defaults"],
+    shared_libs: [
+        "libavutil",
+    ],
+    srcs: [
+        "aarch64/audio_convert_init.c",
+        "aarch64/audio_convert_neon.S",
+        "aarch64/resample.S",
+        "aarch64/resample_init.c",
+
+        "audioconvert.c",
+        "dither.c",
+        "log2_tab.c",
+        "options.c",
+        "rematrix.c",
+        "resample.c",
+        "resample_dsp.c",
+        "swresample.c",
+        "swresample_frame.c",
+        "version.c",
+    ],
+}
