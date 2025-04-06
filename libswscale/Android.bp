@@ -1,0 +1,43 @@
+//
+// Copyright (C) 2025 KonstaKANG
+//
+// SPDX-License-Identifier: LGPL-2.1-or-later
+//
+
+cc_library_shared {
+    name: "libswscale",
+    defaults: ["ffmpeg_defaults"],
+    shared_libs: [
+        "libavutil",
+    ],
+    srcs: [
+        "aarch64/hscale.S",
+        "aarch64/input.S",
+        "aarch64/output.S",
+        "aarch64/range_convert_neon.S",
+        "aarch64/rgb2rgb.c",
+        "aarch64/rgb2rgb_neon.S",
+        "aarch64/swscale.c",
+        "aarch64/swscale_unscaled.c",
+        "aarch64/swscale_unscaled_neon.S",
+        "aarch64/yuv2rgb_neon.S",
+
+        "alphablend.c",
+        "gamma.c",
+        "half2float.c",
+        "hscale.c",
+        "hscale_fast_bilinear.c",
+        "input.c",
+        "log2_tab.c",
+        "options.c",
+        "output.c",
+        "rgb2rgb.c",
+        "slice.c",
+        "swscale.c",
+        "swscale_unscaled.c",
+        "utils.c",
+        "version.c",
+        "vscale.c",
+        "yuv2rgb.c",
+    ],
+}
