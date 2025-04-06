@@ -44,9 +44,7 @@
 /checkasm_config_generated.h
 /checkasm_header_config_generated.h
 /config.asm
-/config.h
 /config_components.asm
-/config_components.h
 /coverage.info
 /lcov/
 /src
