@@ -1,0 +1,49 @@
+#!/bin/bash
+
+#
+# Copyright (C) 2025 KonstaKANG
+#
+# SPDX-License-Identifier: LGPL-2.1-or-later
+#
+
+if [ ! -d "$ANDROID_NDK_HOME" ]; then
+  echo "ANDROID_NDK_HOME environment variable is not properly set!"
+  exit 1
+fi
+
+TOOLS_BASE="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin"
+
+ARCH_CONFIG=" \
+--arch=aarch64 \
+--enable-cross-compile \
+--target-os=android \
+--cross-prefix=${TOOLS_BASE}/aarch64/aarch64-linux-android-4.9/bin/aarch64-linux-android- \
+--cc=${TOOLS_BASE}/aarch64-linux-android35-clang \
+--cxx=${TOOLS_BASE}/aarch64-linux-android35-clang++ \
+--ar=${TOOLS_BASE}/llvm-ar \
+--nm=${TOOLS_BASE}/llvm-nm \
+--ranlib=${TOOLS_BASE}/llvm-ranlib \
+--strip=${TOOLS_BASE}/llvm-strip \
+--x86asmexe=${TOOLS_BASE}/yasm"
+
+FFMPEG_CONFIG=" \
+--disable-avdevice \
+--disable-debug \
+--disable-doc \
+--disable-filters \
+--disable-programs \
+--disable-static \
+--enable-shared"
+
+echo "Generating configuration..."
+echo "./configure $ARCH_CONFIG $FFMPEG_CONFIG"
+./configure $ARCH_CONFIG $FFMPEG_CONFIG
+
+cat > libavutil/ffversion.h <<EOF
+#ifndef AVUTIL_FFVERSION_H
+#define AVUTIL_FFVERSION_H
+#define FFMPEG_VERSION "$(cat RELEASE) (KonstaKANG)"
+#endif /* AVUTIL_FFVERSION_H */
+EOF
+
+exit 0
