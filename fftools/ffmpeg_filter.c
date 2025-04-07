@@ -2791,8 +2791,8 @@ static int send_frame(FilterGraph *fg, FilterGraphThread *fgt,
         break;
     case AVMEDIA_TYPE_VIDEO:
         if (ifp->format != frame->format ||
-            ifp->width  != frame->width ||
-            ifp->height != frame->height ||
+            ifp->width  != av_frame_cropped_width(frame) ||
+            ifp->height != av_frame_cropped_height(frame) ||
             ifp->color_space != frame->colorspace ||
             ifp->color_range != frame->color_range)
             need_reinit |= VIDEO_CHANGED;
@@ -2812,6 +2812,9 @@ static int send_frame(FilterGraph *fg, FilterGraphThread *fgt,
     if (!!ifp->hw_frames_ctx != !!frame->hw_frames_ctx ||
         (ifp->hw_frames_ctx && ifp->hw_frames_ctx->data != frame->hw_frames_ctx->data))
         need_reinit |= HWACCEL_CHANGED;
+
+    if (no_cvt_hw && fgt->graph)
+        need_reinit = 0;
 
     if (need_reinit) {
         ret = ifilter_parameters_from_frame(ifilter, frame);
