@@ -70,8 +70,6 @@ cc_defaults {
         "-fomit-frame-pointer",
         "-mstack-alignment=16",
         "-pthread",
-        "-std=c++11",
-        "-std=c17",
     ],
     ldflags: [
         "-Wl,-Bsymbolic",
@@ -79,4 +77,6 @@ cc_defaults {
     asflags: [
         "-fPIC",
     ],
+    c_std: "c17",
+    cpp_std: "c++11",
 }
