@@ -4136,6 +4136,8 @@ if test "$target_os_default" = aix; then
     arch_default=$(uname -p)
     strip_default="strip -X32_64"
     nm_default="nm -g -X32_64"
+elif test "$MSYSTEM_CARCH" != ""; then
+    arch_default="$MSYSTEM_CARCH"
 else
     arch_default=$(uname -m)
 fi
@@ -5831,6 +5833,13 @@ case $target_os in
             clang_version=$($cc -dumpversion)
             test ${clang_version%%.*} -eq 11 && add_cflags -fno-stack-check
         fi
+
+        # Xcode Clang doesn't default to -fno-common while upstream llvm.org
+        # Clang (and GCC) do. This avoids linker warnings on Xcode 16.3 about
+        # "reducing alignment of section __DATA,__common from 0x8000 to 0x4000
+        # because it exceeds segment maximum alignment".
+        check_cflags -fno-common
+
         ;;
     msys*)
         die "Native MSYS builds are discouraged, please use the MINGW environment."
@@ -6511,6 +6520,9 @@ check_cc intrinsics_sse2 emmintrin.h "__m128i test = _mm_setzero_si128()"
 
 check_ldflags -Wl,--as-needed
 check_ldflags -Wl,-z,noexecstack
+if [ $target_os = "darwin" ]; then
+    check_ldflags -Wl,-no_warn_duplicate_libraries
+fi
 
 if ! disabled network; then
     check_func getaddrinfo $network_extralibs
