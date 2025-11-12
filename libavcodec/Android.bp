@@ -14,7 +14,7 @@ cc_library_shared {
         "libavutil",
         "libdrm",
         "libswresample",
-        "libudev",
+        "libudev-zero",
         "libz",
     ],
     srcs: [
