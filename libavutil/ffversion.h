@@ -1,4 +1,4 @@
 #ifndef AVUTIL_FFVERSION_H
 #define AVUTIL_FFVERSION_H
-#define FFMPEG_VERSION "8.0 (KonstaKANG)"
+#define FFMPEG_VERSION "8.0.1 (KonstaKANG)"
 #endif /* AVUTIL_FFVERSION_H */

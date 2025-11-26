@@ -5242,16 +5242,22 @@ static int mov_read_trak(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 #endif
     }
 
+#if CONFIG_H261_DECODER || CONFIG_H263_DECODER || CONFIG_MPEG4_DECODER
     switch (st->codecpar->codec_id) {
+#if CONFIG_H261_DECODER
     case AV_CODEC_ID_H261:
+#endif
+#if CONFIG_H263_DECODER
     case AV_CODEC_ID_H263:
+#endif
+#if CONFIG_MPEG4_DECODER
     case AV_CODEC_ID_MPEG4:
+#endif
         st->codecpar->width = 0; /* let decoder init width/height */
         st->codecpar->height= 0;
         break;
-    default:
-        break;
     }
+#endif
 
     // If the duration of the mp3 packets is not constant, then they could need a parser
     if (st->codecpar->codec_id == AV_CODEC_ID_MP3
@@ -6844,15 +6850,17 @@ static int mov_read_vexu_proj(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     st = c->fc->streams[c->fc->nb_streams - 1];
     sc = st->priv_data;
 
-    if (atom.size != 16) {
+    if (atom.size < 16) {
         av_log(c->fc, AV_LOG_ERROR, "Invalid size for proj box: %"PRIu64"\n", atom.size);
         return AVERROR_INVALIDDATA;
     }
 
     size = avio_rb32(pb);
-    if (size != 16) {
+    if (size < 16) {
         av_log(c->fc, AV_LOG_ERROR, "Invalid size for prji box: %d\n", size);
         return AVERROR_INVALIDDATA;
+    } else if (size > 16) {
+        av_log(c->fc, AV_LOG_WARNING, "Box has more bytes (%d) than prji box required (16) \n", size);
     }
 
     tag = avio_rl32(pb);
