@@ -622,7 +622,6 @@ cc_library_shared {
         "lagarith.c",
         "lagarithrac.c",
         "latm_parser.c",
-        "lcevcdec.c",
         "lcldec.c",
         "lclenc.c",
         "leaddec.c",
