@@ -35,6 +35,7 @@ cc_defaults {
         "-D_ISOC11_SOURCE",
         "-D_LARGEFILE_SOURCE",
         "-D__STDC_CONSTANT_MACROS",
+        "-Dstrtod=avpriv_strtod",
         "-O3",
         "-Wall",
         "-Wdisabled-optimization",

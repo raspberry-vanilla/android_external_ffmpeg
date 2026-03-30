@@ -223,7 +223,8 @@ OBJS-$(CONFIG_VULKAN)                   += hwcontext_vulkan.o vulkan.o
 
 OBJS-$(!CONFIG_VULKAN)                  += hwcontext_stub.o
 
-OBJS += $(COMPAT_OBJS:%=../compat/%)
+# COMPAT_OBJS= strtod.o
+OBJS += compat/strtod.o
 
 # Object files to satisfy dependencies of other libraries for static builds
 STLIBOBJS-$(CONFIG_EXR_DECODER)         += half2float.o float2half.o
