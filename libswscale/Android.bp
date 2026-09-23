@@ -25,6 +25,7 @@ cc_library_shared {
         "alphablend.c",
         "cms.c",
         "csputils.c",
+        "filters.c",
         "format.c",
         "gamma.c",
         "graph.c",
