@@ -91,6 +91,15 @@ void av_rpi_sand30_to_planar_y8(uint8_t * dst, const unsigned int dst_stride,
                              unsigned int _x, unsigned int y,
                              unsigned int _w, unsigned int h);
 
+// SAND30 -> 16-bit samples with the 10 significant bits MSB-aligned (P010).
+// Use on the luma plane (w = width) or on the interleaved chroma plane
+// (w = 2 * chroma width) to produce the P010 Y and CbCr planes directly.
+void av_rpi_sand30_to_planar_p010(uint8_t * dst, const unsigned int dst_stride,
+                             const uint8_t * src,
+                             unsigned int stride1, unsigned int stride2,
+                             unsigned int _x, unsigned int y,
+                             unsigned int _w, unsigned int h);
+
 // w/h in pixels
 void av_rpi_sand16_to_sand8(uint8_t * dst, const unsigned int dst_stride1, const unsigned int dst_stride2,
                          const uint8_t * src, const unsigned int src_stride1, const unsigned int src_stride2,
@@ -99,7 +108,23 @@ void av_rpi_sand16_to_sand8(uint8_t * dst, const unsigned int dst_stride1, const
 
 // dst must contain required pixel format & allocated data buffers
 // Cropping on the src buffer will be honoured and dst crop will be set to zero
+// NV12 and P010 destinations are converted in horizontal bands on up to
+// av_rpi_sand_set_max_threads() threads (default 4, 1 disables threading).
 int av_rpi_sand_to_planar_frame(AVFrame * const dst, const AVFrame * const src);
+
+// Maximum number of threads used by av_rpi_sand_to_planar_frame() (1..4)
+void av_rpi_sand_set_max_threads(unsigned int n);
+
+// Convert a SAND frame (8-bit SAND128 or 10-bit SAND30) straight into
+// caller owned NV12 planes: dst_y is the luma plane, dst_c the interleaved
+// CbCr plane (e.g. the planes of a graphic buffer). w x h is the size of the
+// region to convert from the top left corner of src (src crop_left/crop_top
+// are honoured as an offset). Multithreaded like av_rpi_sand_to_planar_frame().
+// Returns 0 on success or -1 if src is not a supported SAND format.
+int av_rpi_sand_to_nv12_planes(uint8_t * dst_y, unsigned int dst_stride_y,
+                               uint8_t * dst_c, unsigned int dst_stride_c,
+                               const AVFrame * src,
+                               unsigned int w, unsigned int h);
 
 
 static inline unsigned int av_rpi_sand_frame_stride1(const AVFrame * const frame)

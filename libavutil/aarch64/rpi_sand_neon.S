@@ -433,16 +433,136 @@ function ff_rpi_sand30_lines_to_planar_c16, export=1
 endfunc
 
 
-//void ff_rpi_sand30_lines_to_planar_p010(
-//  uint8_t * dest,
-//  unsigned int dst_stride,
-//  const uint8_t * src,
-//  unsigned int src_stride1,
-//  unsigned int src_stride2,
-//  unsigned int _x,
-//  unsigned int y,
-//  unsigned int _w,
-//  unsigned int h);
+// void ff_rpi_sand30_lines_to_planar_p010(
+//   uint8_t * dest,            : x0
+//   unsigned int dst_stride,   : w1
+//   const uint8_t * src,       : x2
+//   unsigned int src_stride1,  : w3, always 128
+//   unsigned int src_stride2,  : w4
+//   unsigned int _x,           : w5, must be 0
+//   unsigned int y,            : w6
+//   unsigned int _w,           : w7 (samples per line; for the interleaved
+//                                    chroma plane this is 2 * chroma width)
+//   unsigned int h);           : [sp, #0]
+//
+// Same as ff_rpi_sand30_lines_to_planar_y16 but the 10-bit samples are
+// written MSB-aligned (<< 6), i.e. P010 layout. Applied to the SAND30 chroma
+// plane (which is already Cb/Cr interleaved) it produces the P010 CbCr plane
+// directly.
+
+function ff_rpi_sand30_lines_to_planar_p010, export=1
+                lsl             w4,  w4,  #7
+                sub             w4,  w4,  #64
+                uxtw            x4,  w4
+                sub             w1,  w1,  w7, lsl #1
+                uxtw            x6,  w6
+                add             x8,  x2,  x6, lsl #7
+                ldr             w6,  [sp, #0]
+
+10:
+                mov             x2,  x8
+                mov             w5,  w7
+1:
+                ld1             {v0.4s, v1.4s, v2.4s, v3.4s}, [x2], #64
+                ld1             {v4.4s, v5.4s, v6.4s, v7.4s}, [x2], x4
+
+                subs            w5,  w5,  #96
+
+                USAND10         v16, v17, v18, v0, v1
+                USAND10         v19, v20, v21, v2, v3
+                USAND10         v22, v23, v24, v4, v5
+                USAND10         v25, v26, v27, v6, v7
+
+                shl             v16.8h, v16.8h, #6
+                shl             v17.8h, v17.8h, #6
+                shl             v18.8h, v18.8h, #6
+                shl             v19.8h, v19.8h, #6
+                shl             v20.8h, v20.8h, #6
+                shl             v21.8h, v21.8h, #6
+                shl             v22.8h, v22.8h, #6
+                shl             v23.8h, v23.8h, #6
+                shl             v24.8h, v24.8h, #6
+                shl             v25.8h, v25.8h, #6
+                shl             v26.8h, v26.8h, #6
+                shl             v27.8h, v27.8h, #6
+
+                blt             2f
+
+                st3             {v16.8h, v17.8h, v18.8h}, [x0], #48
+                st3             {v19.8h, v20.8h, v21.8h}, [x0], #48
+                st3             {v22.8h, v23.8h, v24.8h}, [x0], #48
+                st3             {v25.8h, v26.8h, v27.8h}, [x0], #48
+
+                bne             1b
+
+11:
+                subs            w6,  w6,  #1
+                add             x0,  x0,  w1,  uxtw
+                add             x8,  x8,  #128
+                bne             10b
+
+                ret
+
+// Partial final write
+2:
+                cmp             w5,  #48-96
+                blt             1f
+                st3             {v16.8h, v17.8h, v18.8h}, [x0], #48
+                st3             {v19.8h, v20.8h, v21.8h}, [x0], #48
+                beq             11b
+                mov             v16.16b, v22.16b
+                mov             v17.16b, v23.16b
+                sub             w5,  w5,  #48
+                mov             v18.16b, v24.16b
+                mov             v19.16b, v25.16b
+                mov             v20.16b, v26.16b
+                mov             v21.16b, v27.16b
+1:
+                cmp             w5,  #24-96
+                blt             1f
+                st3             {v16.8h, v17.8h, v18.8h}, [x0], #48
+                beq             11b
+                mov             v16.16b, v19.16b
+                mov             v17.16b, v20.16b
+                sub             w5,  w5,  #24
+                mov             v18.16b, v21.16b
+1:
+                cmp             w5,  #12-96
+                blt             1f
+                st3             {v16.4h, v17.4h, v18.4h}, [x0], #24
+                beq             11b
+                mov             v16.d[0], v16.d[1]
+                sub             w5,  w5,  #12
+                mov             v17.d[0], v17.d[1]
+                mov             v18.d[0], v18.d[1]
+1:
+                cmp             w5,  #6-96
+                blt             1f
+                st3             {v16.h, v17.h, v18.h}[0], [x0], #6
+                st3             {v16.h, v17.h, v18.h}[1], [x0], #6
+                beq             11b
+                mov             v16.s[0], v16.s[1]
+                sub             w5,  w5,  #6
+                mov             v17.s[0], v17.s[1]
+                mov             v18.s[0], v18.s[1]
+1:
+                cmp             w5,  #3-96
+                blt             1f
+                st3             {v16.h, v17.h, v18.h}[0], [x0], #6
+                beq             11b
+                mov             v16.h[0], v16.h[1]
+                sub             w5,  w5,  #3
+                mov             v17.h[0], v17.h[1]
+1:
+                cmp             w5,  #2-96
+                blt             1f
+                st2             {v16.h, v17.h}[0], [x0], #4
+                b               11b
+1:
+                st1             {v16.h}[0], [x0], #2
+                b               11b
+
+endfunc
 
 // void ff_rpi_sand30_lines_to_planar_y8(
 //   uint8_t * dest,            : x0
