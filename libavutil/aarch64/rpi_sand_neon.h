@@ -54,6 +54,10 @@ void ff_rpi_sand30_lines_to_planar_y8(uint8_t * dest, unsigned int dst_stride,
   const uint8_t * src, unsigned int src_stride1, unsigned int src_stride2,
   unsigned int _x, unsigned int y, unsigned int _w, unsigned int h);
 
+void ff_rpi_sand30_lines_to_planar_p010(uint8_t * dest, unsigned int dst_stride,
+  const uint8_t * src, unsigned int src_stride1, unsigned int src_stride2,
+  unsigned int _x, unsigned int y, unsigned int _w, unsigned int h);
+
 #ifdef __cplusplus
 }
 #endif

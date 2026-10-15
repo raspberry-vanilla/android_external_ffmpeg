@@ -33,6 +33,9 @@ Authors: John Cox
 #include "rpi_sand_fns.h"
 #include "avassert.h"
 #include "frame.h"
+#include "cpu.h"
+#include "macros.h"
+#include <pthread.h>
 
 #if ARCH_ARM && HAVE_NEON
 #include "libavutil/arm/cpu.h"
@@ -299,6 +302,75 @@ void av_rpi_sand30_to_planar_y8(uint8_t * dst, const unsigned int dst_stride,
     }
 }
 
+// Fetches a single patch - offscreen fixup not done here
+// w <= stride1
+// unclipped
+// _x & _w in samples, strides in bytes
+// Output: 16-bit little-endian, 10 significant bits in the MSBs (P010)
+void av_rpi_sand30_to_planar_p010(uint8_t * dst, const unsigned int dst_stride,
+                             const uint8_t * src,
+                             unsigned int stride1, unsigned int stride2,
+                             unsigned int _x, unsigned int y,
+                             unsigned int _w, unsigned int h)
+{
+    const unsigned int x0 = (_x / 3) * 4; // Byte offset of the word
+    const unsigned int xskip0 = _x - (x0 >> 2) * 3;
+    const unsigned int x1 = ((_x + _w) / 3) * 4;
+    const unsigned int xrem1 = _x + _w - (x1 >> 2) * 3;
+    const unsigned int mask = stride1 - 1;
+    const uint8_t * p0 = src + (x0 & mask) + y * stride1 + (x0 & ~mask) * stride2;
+    const unsigned int slice_inc = ((stride2 - 1) * stride1) >> 2;  // RHS of a stripe to LHS of next in words
+
+#if HAVE_SAND_ASM
+    if (_x == 0 && have_neon(av_get_cpu_flags())) {
+        ff_rpi_sand30_lines_to_planar_p010(dst, dst_stride, src, stride1, stride2, _x, y, _w, h);
+        return;
+    }
+#endif
+
+    if (x0 == x1) {
+        // *******************
+        // Partial single word xfer
+        return;
+    }
+
+    for (unsigned int i = 0; i != h; ++i, dst += dst_stride, p0 += stride1)
+    {
+        unsigned int x = x0;
+        const uint32_t * p = (const uint32_t *)p0;
+        uint16_t * d = (uint16_t *)dst;
+
+        if (xskip0 != 0) {
+            const uint32_t p3 = *p++;
+
+            if (xskip0 == 1)
+                *d++ = (p3 >> 4) & 0xffc0;
+            *d++ = (p3 >> 14) & 0xffc0;
+
+            if (((x += 4) & mask) == 0)
+                p += slice_inc;
+        }
+
+        while (x != x1) {
+            const uint32_t p3 = *p++;
+            *d++ = (p3 << 6) & 0xffc0;
+            *d++ = (p3 >> 4) & 0xffc0;
+            *d++ = (p3 >> 14) & 0xffc0;
+
+            if (((x += 4) & mask) == 0)
+                p += slice_inc;
+        }
+
+        if (xrem1 != 0) {
+            const uint32_t p3 = *p;
+
+            *d++ = (p3 << 6) & 0xffc0;
+            if (xrem1 == 2)
+                *d++ = (p3 >> 4) & 0xffc0;
+        }
+    }
+}
+
 
 
 // w/h in pixels
@@ -353,6 +425,165 @@ void av_rpi_sand16_to_sand8(uint8_t * dst, const unsigned int dst_stride1, const
     }
 }
 
+// ---------------------------------------------------------------------------
+// Banded multithreaded conversion
+//
+// Converting a 4K SAND frame to a linear frame is memory bound work for a single
+// core and takes tens of milliseconds, which caps 4K playback at ~10 fps on the
+// Pi 4. The conversion is done line by line, so a frame can be split into
+// horizontal bands that are converted in parallel.
+
+#define SAND_MAX_THREADS 4
+
+enum {
+    SAND_OP_Y8_SAND8,
+    SAND_OP_Y8_SAND30,
+    SAND_OP_P010_SAND30,
+};
+
+typedef struct SandJob {
+    int op;
+    uint8_t * dst;
+    unsigned int dst_stride;
+    const uint8_t * src;
+    unsigned int stride1, stride2;
+    unsigned int x, y, w, h;
+} SandJob;
+
+typedef struct SandThread {
+    SandJob job[2];     // luma band, chroma band
+    pthread_t tid;
+    int started;
+} SandThread;
+
+static unsigned int sand_max_threads = SAND_MAX_THREADS;
+
+void av_rpi_sand_set_max_threads(unsigned int n)
+{
+    sand_max_threads = FFMAX(1, FFMIN(n, SAND_MAX_THREADS));
+}
+
+static void sand_run_job(const SandJob * const j)
+{
+    switch (j->op) {
+        case SAND_OP_Y8_SAND8:
+            av_rpi_sand_to_planar_y8(j->dst, j->dst_stride, j->src, j->stride1, j->stride2,
+                                     j->x, j->y, j->w, j->h);
+            break;
+        case SAND_OP_Y8_SAND30:
+            av_rpi_sand30_to_planar_y8(j->dst, j->dst_stride, j->src, j->stride1, j->stride2,
+                                       j->x, j->y, j->w, j->h);
+            break;
+        case SAND_OP_P010_SAND30:
+            av_rpi_sand30_to_planar_p010(j->dst, j->dst_stride, j->src, j->stride1, j->stride2,
+                                         j->x, j->y, j->w, j->h);
+            break;
+    }
+}
+
+static void * sand_worker(void * const v)
+{
+    const SandThread * const t = v;
+    sand_run_job(t->job + 0);
+    sand_run_job(t->job + 1);
+    return NULL;
+}
+
+// Converts the luma plane and the interleaved chroma plane (NV12 / P010 style)
+// with the same operation, in horizontal bands spread over several threads.
+static void sand_convert_banded(const int op,
+                                uint8_t * const dst_y, const unsigned int dst_stride_y,
+                                const uint8_t * const src_y, const unsigned int stride2_y,
+                                uint8_t * const dst_c, const unsigned int dst_stride_c,
+                                const uint8_t * const src_c, const unsigned int stride2_c,
+                                const unsigned int stride1,
+                                const unsigned int x, const unsigned int y,
+                                const unsigned int w, const unsigned int h)
+{
+    SandThread th[SAND_MAX_THREADS];
+    unsigned int nthreads = sand_max_threads;
+    unsigned int n = 0, i;
+    unsigned int band, r;
+
+    if (nthreads > 1) {
+        const int cpus = av_cpu_count();
+        if (cpus > 0 && (unsigned int)cpus < nthreads)
+            nthreads = cpus;
+    }
+
+    // Even number of rows per band so that luma and chroma rows line up
+    band = (((h + nthreads - 1) / nthreads) + 1) & ~1u;
+
+    for (r = 0; r < h && n < SAND_MAX_THREADS; r += band, ++n) {
+        const unsigned int bh = FFMIN(band, h - r);
+        const unsigned int c0 = r / 2;
+        const unsigned int c1 = (r + bh) / 2;
+        SandThread * const t = th + n;
+
+        t->started = 0;
+
+        t->job[0].op = op;
+        t->job[0].dst = dst_y + (size_t)r * dst_stride_y;
+        t->job[0].dst_stride = dst_stride_y;
+        t->job[0].src = src_y;
+        t->job[0].stride1 = stride1;
+        t->job[0].stride2 = stride2_y;
+        t->job[0].x = x;
+        t->job[0].y = y + r;
+        t->job[0].w = w;
+        t->job[0].h = bh;
+
+        t->job[1].op = op;
+        t->job[1].dst = dst_c + (size_t)c0 * dst_stride_c;
+        t->job[1].dst_stride = dst_stride_c;
+        t->job[1].src = src_c;
+        t->job[1].stride1 = stride1;
+        t->job[1].stride2 = stride2_c;
+        t->job[1].x = x / 2;
+        t->job[1].y = y / 2 + c0;
+        t->job[1].w = w;
+        t->job[1].h = c1 - c0;
+    }
+
+    // Band 0 runs on the calling thread, the rest on helper threads. If a
+    // thread cannot be created, that band is simply converted here as well.
+    for (i = 1; i < n; i++)
+        th[i].started = pthread_create(&th[i].tid, NULL, sand_worker, th + i) == 0;
+    sand_worker(th + 0);
+    for (i = 1; i < n; i++) {
+        if (th[i].started)
+            pthread_join(th[i].tid, NULL);
+        else
+            sand_worker(th + i);
+    }
+}
+
+int av_rpi_sand_to_nv12_planes(uint8_t * const dst_y, const unsigned int dst_stride_y,
+                               uint8_t * const dst_c, const unsigned int dst_stride_c,
+                               const AVFrame * const src,
+                               const unsigned int w, const unsigned int h)
+{
+    int op;
+
+    switch (src->format) {
+        case AV_PIX_FMT_SAND128:
+        case AV_PIX_FMT_RPI4_8:
+            op = SAND_OP_Y8_SAND8;
+            break;
+        case AV_PIX_FMT_RPI4_10:
+            op = SAND_OP_Y8_SAND30;
+            break;
+        default:
+            return -1;
+    }
+
+    sand_convert_banded(op,
+                        dst_y, dst_stride_y, src->data[0], av_rpi_sand_frame_stride2_y(src),
+                        dst_c, dst_stride_c, src->data[1], av_rpi_sand_frame_stride2_c(src),
+                        av_rpi_sand_frame_stride1(src), src->crop_left, src->crop_top, w, h);
+    return 0;
+}
+
 int av_rpi_sand_to_planar_frame(AVFrame * const dst, const AVFrame * const src)
 {
     const int w = av_frame_cropped_width(src);
@@ -384,14 +615,10 @@ int av_rpi_sand_to_planar_frame(AVFrame * const dst, const AVFrame * const src)
                                              x/2, y/2,  w/2, h/2);
                     break;
                 case AV_PIX_FMT_NV12:
-                    av_rpi_sand_to_planar_y8(dst->data[0], dst->linesize[0],
-                                             src->data[0],
-                                             av_rpi_sand_frame_stride1(src), stride2_y,
-                                             x, y, w, h);
-                    av_rpi_sand_to_planar_y8(dst->data[1], dst->linesize[1],
-                                             src->data[1],
-                                             av_rpi_sand_frame_stride1(src), stride2_c,
-                                             x/2, y/2, w, h/2);
+                    sand_convert_banded(SAND_OP_Y8_SAND8,
+                                        dst->data[0], dst->linesize[0], src->data[0], stride2_y,
+                                        dst->data[1], dst->linesize[1], src->data[1], stride2_c,
+                                        av_rpi_sand_frame_stride1(src), x, y, w, h);
                     break;
                 default:
                     return -1;
@@ -428,14 +655,18 @@ int av_rpi_sand_to_planar_frame(AVFrame * const dst, const AVFrame * const src)
                                              x/2, y/2, w/2, h/2);
                     break;
                 case AV_PIX_FMT_NV12:
-                    av_rpi_sand30_to_planar_y8(dst->data[0], dst->linesize[0],
-                                             src->data[0],
-                                             av_rpi_sand_frame_stride1(src), stride2_y,
-                                             x, y, w, h);
-                    av_rpi_sand30_to_planar_y8(dst->data[1], dst->linesize[1],
-                                             src->data[1],
-                                             av_rpi_sand_frame_stride1(src), stride2_c,
-                                             x/2, y/2, w, h/2);
+                    sand_convert_banded(SAND_OP_Y8_SAND30,
+                                        dst->data[0], dst->linesize[0], src->data[0], stride2_y,
+                                        dst->data[1], dst->linesize[1], src->data[1], stride2_c,
+                                        av_rpi_sand_frame_stride1(src), x, y, w, h);
+                    break;
+                case AV_PIX_FMT_P010LE:
+                    // Single pass, no intermediate planar frame: luma, then
+                    // the (already interleaved) chroma plane, both << 6.
+                    sand_convert_banded(SAND_OP_P010_SAND30,
+                                        dst->data[0], dst->linesize[0], src->data[0], stride2_y,
+                                        dst->data[1], dst->linesize[1], src->data[1], stride2_c,
+                                        av_rpi_sand_frame_stride1(src), x, y, w, h);
                     break;
                 default:
                     return -1;

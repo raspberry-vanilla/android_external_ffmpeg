@@ -243,7 +243,7 @@ static int drm_transfer_get_formats(AVHWFramesContext *ctx,
 {
     enum AVPixelFormat *p;
 
-    p = *formats = av_malloc_array(3, sizeof(*p));
+    p = *formats = av_malloc_array(4, sizeof(*p));
     if (!p)
         return AVERROR(ENOMEM);
 
@@ -261,6 +261,8 @@ static int drm_transfer_get_formats(AVHWFramesContext *ctx,
     if (ctx->sw_format == AV_PIX_FMT_RPI4_10 ||
         ctx->sw_format == AV_PIX_FMT_RPI4_8 || ctx->sw_format == AV_PIX_FMT_SAND128)
         *p++ = AV_PIX_FMT_NV12;
+    if (ctx->sw_format == AV_PIX_FMT_RPI4_10)
+        *p++ = AV_PIX_FMT_P010LE;
 #endif
 
     *p = AV_PIX_FMT_NONE;
